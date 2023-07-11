@@ -1,0 +1,1 @@
+# Fitxador automàtic pel Tempus UPC
