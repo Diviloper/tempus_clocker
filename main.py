@@ -2,8 +2,55 @@ import random
 import time
 from datetime import datetime, timedelta
 from functools import lru_cache
+import sys
+import subprocess
+from typing import Tuple
 
-import requests
+try:
+    import requests
+except ImportError:
+    print("Aquest programa necessita el mòdul 'requests' per funcionar.")
+    install = input("Vols instal·lar-lo? [S/n] ").lower() != 'n'
+    if install:
+        try:
+            subprocess.check_call([sys.executable, "-m", "pip", "install", 'requests'])
+            import requests
+
+            print("El mòdul 'requests' s'ha instal·lat correctament.")
+        except subprocess.CalledProcessError:
+            print("No s'ha pogut instal·lar el mòdul 'requests'.")
+            print("Instal·la'l manualment i torna a executar el programa.")
+            sys.exit(1)
+        except ImportError:
+            print("No s'ha pogut instal·lar el mòdul 'requests'.")
+            print("Instal·la'l manualment i torna a executar el programa.")
+            sys.exit(1)
+    else:
+        print("Instal·la'l manualment i torna a executar el programa.")
+        sys.exit(1)
+
+try:
+    import browser_cookie3
+except ImportError:
+    print("Aquest programa utilitza el mòdul 'browser_cookie3' per a obtenir les cookies necessaries automàticament.")
+    print("Si no vols instal·lar-lo, les hauràs d'obtenir i introduir manualment, però podràs fitxar igualment.")
+    install = input("Vols instal·lar-lo? [S/n] ").lower() != 'n'
+    if install:
+        try:
+            subprocess.check_call([sys.executable, "-m", "pip", "install", 'browser_cookie3'])
+            import browser_cookie3
+
+            print("El mòdul 'browser_cookie3' s'ha instal·lat correctament.")
+        except subprocess.CalledProcessError:
+            print("No s'ha pogut instal·lar el mòdul 'browser_cookie3'.")
+            print("Es procedirà sense l'obtenció automàtica de cookies.")
+            browser_cookie3 = None
+        except ImportError:
+            print("No s'ha pogut instal·lar el mòdul 'browser_cookie3'.")
+            print("Es procedirà sense l'obtenció automàtica de cookies.")
+            browser_cookie3 = None
+    else:
+        browser_cookie3 = None
 
 arts = [
     r"""
@@ -133,6 +180,41 @@ day_names = [
 def get_weekday(date: str) -> str:
     parsed = datetime.strptime(date, "%d/%m/%Y")
     return day_names[parsed.weekday()]
+
+
+def get_cookies() -> Tuple[str, str]:
+    print("Primer de tot, necessitem les cookies de la teva sessió del Tempus per poder fitxar.")
+    if browser_cookie3 is None:
+        return get_cookies_manually()
+    print("Les intentarem obtenir automàticament, però si no funciona, les hauràs d'introduir manualment.")
+    print("Per obtenir-les, necessitem que obris qualsevol navegador i iniciïs sessió al Tempus.")
+    print("Un cop iniciada la sessió, torna aquí i prem ENTER.")
+    input()
+
+    cj = browser_cookie3.load(domain_name='tempus.upc.edu')
+    try:
+        cookie_base = cj._cookies['tempus.upc.edu']['/']['JSESSIONID'].value
+        cookie_rlg = cj._cookies['tempus.upc.edu']['/RLG']['JSESSIONID'].value
+
+        return cookie_base, cookie_rlg
+    except KeyError:
+        print("No s'ha pogut obtenir les cookies automàticament. Necessitem que les introdueixis manualment.")
+        return get_cookies_manually()
+
+
+def get_cookies_manually() -> Tuple[str, str]:
+    print("Per obtenir-les, segueix les següents instruccions:")
+    print("\t1. Entra a https://tempus.upc.edu i inicia sessió")
+    print("\t2. Obre la consola del navegador (F12) i ves a l'apartat 'Aplicació' (Chrome o Edge) o "
+          "'Emmagatzematge' (Firefox)")
+    print("\t3. A l'apartat 'Cookies', subapartat 'https://tempus.upc.edu', haurien d'apareixer dues cookies, "
+          "ambdues amb nom 'JSESSIONID', amb diferents valors a 'Valor' i a 'Ruta'")
+    print("\t4. Copia el valor de les dues cookies i enganxa-les a continuació:")
+
+    cookie_base = input("JSESSIONID amb Ruta '/': ")
+    cookie_rlg = input("JSESSIONID amb Ruta '/RLG': ")
+
+    return cookie_base, cookie_rlg
 
 
 def get_code() -> str:
@@ -305,17 +387,8 @@ def clock(cookie_base, cookie_rlg):
 def main():
     print("Benvigut al Fitxador automàtic del Tempus UPC, proveït per")
     print(arts[random.Random().randint(0, len(arts) - 1)])
-    print("Abans de començar, hauràs d'introduir les cookies de sessió del tempus.")
-    print("Per obtenir-les, segueix les següents instruccions:")
-    print("\t1. Entra a https://tempus.upc.edu i inicia sessió")
-    print("\t2. Obre la consola del navegador (F12) i ves a l'apartat 'Aplicació' (Chrome o Edge) o "
-          "'Emmagatzematge' (Firefox)")
-    print("\t3. A l'apartat 'Cookies', subapartat 'https://tempus.upc.edu', hauria d'apareixer dues cookies, "
-          "ambdues amb nom 'JSESSIONID', amb diferents valors a 'Valor' i a 'Ruta'")
-    print("\t4. Copia el valor de les dues cookies i enganxa-les a continuació:")
 
-    cookie_base = input("JSESSIONID amb Ruta '/': ")
-    cookie_rlg = input("JSESSIONID amb Ruta '/RLG': ")
+    cookie_base, cookie_rlg = get_cookies()
 
     print("Perfecte, ara procedirem a fer els fitxatges.")
     clock(cookie_base, cookie_rlg)
