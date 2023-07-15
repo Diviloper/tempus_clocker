@@ -13,7 +13,8 @@ pip install requests browser_cookie3
 ```
 
 La llibreria `browser_cookie3` és opcional i s'utilitza per obtenir automàticament les cookies necessàries de l'usuari 
-del navegador, però si no es troben o la llibreria no està instal·lada, les hauràs d'introduir manualment seguint.
+del navegador, però si no es troben o la llibreria no està instal·lada, les hauràs d'introduir manualment quan se't 
+demani.
 
 ## Ús
 
