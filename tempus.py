@@ -191,13 +191,14 @@ def get_cookies() -> Tuple[str, str]:
     print("Un cop iniciada la sessió, torna aquí i prem ENTER.")
     input()
 
-    cj = browser_cookie3.load(domain_name='tempus.upc.edu')
+    
     try:
+        cj = browser_cookie3.load(domain_name='tempus.upc.edu')
         cookie_base = cj._cookies['tempus.upc.edu']['/']['JSESSIONID'].value
         cookie_rlg = cj._cookies['tempus.upc.edu']['/RLG']['JSESSIONID'].value
 
         return cookie_base, cookie_rlg
-    except KeyError:
+    except (KeyError, PermissionError):
         print("No s'ha pogut obtenir les cookies automàticament. Necessitem que les introdueixis manualment.")
         return get_cookies_manually()
 
@@ -360,17 +361,17 @@ def clock_in_request(cookie_base, cookie_rlg, code, date, hour) -> bool:
     return True
 
 
-def clock_in(cookie_base, cookie_rlg, code, dates, hours) -> None:
-    print('Procedim a fer els fitxatges. Es deixarà un marge de 2 segons entre cada fitxatge.')
+def clock_in(cookie_base, cookie_rlg, code, dates, hours, wait=2) -> None:
+    print(f'Procedim a fer els fitxatges. Es deixarà un marge de {wait} {'segons' if wait != 1 else 'segon'} entre cada fitxatge.')
     for date in dates:
         print(f'\t {get_weekday(date)} {date}: ', end='')
         for hour in hours:
-            print(f'{hour} ', end='')
+            print(f'{hour} ', end='', flush=True)
             if clock_in_request(cookie_base, cookie_rlg, code, date, hour):
-                print(f'✓   ', end='')
+                print(f'✓   ', end='', flush=True)
             else:
-                print(f'✗   ', end='')
-            time.sleep(2)
+                print(f'✗   ', end='', flush=True)
+            time.sleep(wait)
         print()
 
 
