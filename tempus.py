@@ -176,19 +176,20 @@ def get_cookies() -> Tuple[str, str]:
     if browser_cookie3 is None:
         return get_cookies_manually()
     print("Les intentarem obtenir automàticament, però si no funciona, les hauràs d'introduir manualment.")
-    print("Per obtenir-les, necessitem que obris qualsevol navegador i iniciïs sessió al Tempus.")
+    print("Per obtenir-les, necessitem que iniciïs sessió al Tempus des d'un navegador: https://tempus.upc.edu/")
     print("Un cop iniciada la sessió, torna aquí i prem ENTER.")
     input()
 
-    
     try:
         cj = browser_cookie3.load(domain_name='tempus.upc.edu')
         cookie_base = cj._cookies['tempus.upc.edu']['/']['JSESSIONID'].value
         cookie_rlg = cj._cookies['tempus.upc.edu']['/RLG']['JSESSIONID'].value
 
         return cookie_base, cookie_rlg
-    except (KeyError, PermissionError):
-        print("No s'ha pogut obtenir les cookies automàticament. Necessitem que les introdueixis manualment.")
+    except (KeyError, PermissionError) as e:
+        print("No s'ha pogut obtenir les cookies automàticament a causa del següent error:")
+        print(f"\t{e}")
+        print("Necessitem que les introdueixis manualment.")
         return get_cookies_manually()
 
 
@@ -351,7 +352,8 @@ def clock_in_request(cookie_base, cookie_rlg, code, date, hour) -> bool:
 
 
 def clock_in(cookie_base, cookie_rlg, code, dates, hours, wait=2) -> None:
-    print(f'Procedim a fer els fitxatges. Es deixarà un marge de {wait} {'segons' if wait != 1 else 'segon'} entre cada fitxatge.')
+    print(
+        f'Procedim a fer els fitxatges. Es deixarà un marge de {wait} {'segons' if wait != 1 else 'segon'} entre cada fitxatge.')
     for date in dates:
         print(f'\t {get_weekday(date)} {date}: ', end='')
         for hour in hours:
