@@ -177,8 +177,7 @@ def get_cookies() -> Tuple[str, str]:
         return get_cookies_manually()
     print("Les intentarem obtenir automàticament, però si no funciona, les hauràs d'introduir manualment.")
     print("Per obtenir-les, necessitem que iniciïs sessió al Tempus des d'un navegador: https://tempus.upc.edu/")
-    print("Un cop iniciada la sessió, torna aquí i prem ENTER.")
-    input()
+    input("Un cop iniciada la sessió, torna aquí i prem ENTER.")
 
     try:
         cj = browser_cookie3.load(domain_name='tempus.upc.edu')
