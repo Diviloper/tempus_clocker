@@ -198,7 +198,7 @@ def get_cookies_manually() -> Tuple[str, str]:
     print("\t1. Entra a https://tempus.upc.edu i inicia sessió")
     print("\t2. Obre la consola del navegador (F12) i ves a l'apartat 'Aplicació' (Chrome o Edge) o "
           "'Emmagatzematge' (Firefox)")
-    print("\t3. A l'apartat 'Cookies', subapartat 'https://tempus.upc.edu', haurien d'apareixer dues cookies, "
+    print("\t3. A l'apartat 'Cookies', subapartat 'https://tempus.upc.edu', haurien d'aparèixer dues cookies, "
           "ambdues amb nom 'JSESSIONID', amb diferents valors a 'Valor' i a 'Ruta'")
     print("\t4. Copia el valor de les dues cookies i enganxa-les a continuació:")
 
@@ -280,6 +280,9 @@ def get_dates(with_intro: bool = True) -> list[str]:
             else:
                 print(f"La data '{date}' no és vàlida, s'ignorarà.")
 
+    if len(final_dates) == 0:
+        print("No s'ha introduït cap data vàlida.")
+        return get_dates(with_intro=False)
     print('Els fitxatges es faran els dies:')
     for date in final_dates:
         print(f'  - {date} ({day_names[datetime.strptime(date, "%d/%m/%Y").weekday()]})')
@@ -303,7 +306,9 @@ def get_hours(with_intro: bool = True) -> list[str]:
             final_hours.append(hour)
         else:
             print(f"La hora '{hour}' no és vàlida, s'ignorarà.")
-
+    if len(final_hours) == 0:
+        print("No s'ha introduït cap hora vàlida.")
+        return get_hours(with_intro=False)
     print('Els fitxatges es faran a les hores:')
     for hour in final_hours:
         print(f'\t- {hour}')
@@ -353,7 +358,8 @@ def clock_in_request(cookie_base, cookie_rlg, code, date, hour) -> bool:
 
 def clock_in(cookie_base, cookie_rlg, code, dates, hours, wait=2) -> None:
     print(
-        f'Procedim a fer els fitxatges. Es deixarà un marge de {wait} {'segons' if wait != 1 else 'segon'} entre cada fitxatge.')
+        f'Procedim a fer els fitxatges. '
+        f'Es deixarà un marge de {wait} {"segons" if wait != 1 else "segon"} entre cada fitxatge.')
     for date in dates:
         print(f'\t {get_weekday(date)} {date}: ', end='')
         for hour in hours:
@@ -377,7 +383,7 @@ def clock(cookie_base, cookie_rlg):
 
 
 def main():
-    print("Benvigut al Fitxador automàtic del Tempus UPC, proveït per")
+    print("Benvingut al Fitxador automàtic del Tempus UPC, proveït per")
     print(arts[random.Random().randint(0, len(arts) - 1)])
 
     cookie_base, cookie_rlg = get_cookies()
