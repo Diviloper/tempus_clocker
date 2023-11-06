@@ -242,6 +242,12 @@ def is_weekend(date: str) -> bool:
 
 
 def is_valid_date(date: str) -> bool:
+    if len(date) != 10:
+        parts = date.split('/')
+        parts[0] = parts[0].zfill(2)
+        parts[1] = parts[1].zfill(2)
+        parts[2] = '20' + parts[2] if len(parts[2]) == 2 else parts[2]
+        date = '/'.join(parts)
     try:
         datetime.strptime(date, "%d/%m/%Y")
         return True
