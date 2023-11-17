@@ -26,6 +26,11 @@ function getLastCellWithTextIndex(tdElements) {
     return i;
 }
 
+function addButtons() {
+    let rows = document.getElementById('tableList').tBodies[0].rows;
+    rows.forEach(addButtonsToRow);
+}
+
 function addButtonsToRow(row) {
     let cells = Array.from(row.cells);
     let date = cells[0].innerText;
@@ -73,7 +78,10 @@ function addClock(row, nextElement, min_h, max_h) {
         is24hour: true,
         hourPadding: false,
         minTime: min_h,
-        maxTime: max_h
+        maxTime: max_h,
+        events: {
+            timeChanged: (data) => updateRowCounter(row, new_cell, data.value),
+        }
     });
 
     row.insertBefore(new_cell, nextElement);
@@ -106,6 +114,7 @@ function removeButtons(date) {
 }
 
 async function clockInRequest(date, hour, reason) {
+    /* Not working due to cross origin probably */
     console.log(date, hour, reason);
     const formData = new FormData();
     formData.set('codiSolicitudMarcatge', reason);
@@ -143,9 +152,11 @@ async function clockIn() {
             return;
         }
     }
-    let confirmation = confirm('Per seguretat, el tempus no permet fer fitxatges des d\'aquesta pàgina.\n' + 
-    'Es procedirà a obrir una pàgina nova per cada fitxatge amb les dades ompler-tes per a que el facis tu mateix.\n' + 
-    'Assegura\'t de permetre la pàgina obrir finestres emergents abans');
+    let confirmation = confirm('Per seguretat, el tempus no permet fer fitxatges des d\'aquesta pàgina.\n' +
+        'Es procedirà a obrir una pàgina nova per cada fitxatge amb les dades ompler-tes per a que el facis tu mateix.\n' +
+        'Assegura\'t de permetre la pàgina obrir finestres emergents abans. Si no hi ha la opció, continua normal.\n' +
+        'Si veus que només s\'obre una pàgina quan has fet diversos marcatges, t\'hauria de sortir també una icona indicant que s\'han bloquejat les finestres' +
+        '(acostuma a estar a dreta o esquerra de la URL). Permet les finestres i torna a clicar \'\'Realitzar Marcatges\'\'.');
     if (!confirmation) return;
 
     for (const clock of new_clocks) {
@@ -186,15 +197,25 @@ async function clockIn() {
 function addConfigMenu() {
     let old_llegenda = document.getElementsByClassName('llegenda')[0];
     old_llegenda.classList.remove('llegenda');
+    old_llegenda.style.flex = '1 1 0';
 
     let new_llegenda = document.createElement('div');
     new_llegenda.classList.add('llegenda');
     new_llegenda.style.display = 'flex';
     new_llegenda.style.justifyContent = 'space-between';
+    new_llegenda.style.gap = '20px;';
 
     let options = document.createElement('div');
 
     let type_div = document.createElement('div');
+    type_div.style.flex = '1 1 0';
+    type_div.style.display = 'flex';
+    type_div.style.flexDirection = 'column';
+    type_div.style.alignItems = 'center';
+    type_div.innerHTML = '<b>Tingues en compte:</b>' +
+        '<ul>' +
+        '<li>El nou saldo no té en compte el teu horari personal, pel que el saldo nou real pot no coincidir amb el mostrat.</li>' +
+        '<li>Comprova si tens algun marcatge pendent que no estigui encara aquí</li>';
 
     let label = document.createElement('label');
     label.for = 'codiSolicitudMarcatge';
@@ -267,10 +288,74 @@ function addConfigMenu() {
     type_div.appendChild(clock_button);
 }
 
-rows = document.getElementById('tableList').tBodies[0].rows;
+function hourStringToMins(hour) {
+    return parseInt(hour.split(':')[0]) * 60 + parseInt(hour.split(':')[1]);
+}
 
-rows.forEach(addButtonsToRow);
+function hourDiff(start, end) {
+    if (start == '' || end == '') return 0;
+    return hourStringToMins(end) - hourStringToMins(start);
+}
 
+function minsToHourString(mins) {
+    let h = `${Math.floor(Math.abs(mins) / 60)}`.padStart(2, '0');
+    let m = `${Math.abs(mins) % 60}`.padStart(2, '0');
+    let s = mins < 0 ? '-' : '+';
+    return `${s} ${h}:${m}`;
+}
+
+function computeTotalDiff(clocks, theorical_hours) {
+    let worked_mins = hourDiff(clocks[0].innerText, clocks[1].innerText) +
+        hourDiff(clocks[2].innerText, clocks[3].innerText) +
+        hourDiff(clocks[4].innerText, clocks[5].innerText) +
+        hourDiff(clocks[6].innerText, clocks[7].innerText);
+    let expected_mins = hourStringToMins(theorical_hours.innerText);
+    let diff = worked_mins - expected_mins;
+    return minsToHourString(diff);
+}
+
+function addNewColumn() {
+    let table = document.getElementById('tableList');
+
+    let header_cell = document.createElement('th');
+    header_cell.innerText = 'Nou saldo';
+    table.tHead.rows[0].appendChild(header_cell);
+
+    let rows = table.tBodies[0].rows;
+
+    for (const row of rows) {
+        let new_cell = document.createElement('td');
+        row.appendChild(new_cell);
+    }
+    updateNewCounters();
+}
+
+function updateNewCounters() {
+    let rows = document.getElementById('tableList').tBodies[0].rows;
+    for (const row of rows) {
+        updateRowCounter(row);
+    }
+}
+
+function updateRowCounter(row, cell, value) {
+    let clocks = Array.from(row.cells).slice(2, 10);
+    let index = clocks.indexOf(cell);
+    if (index > -1) {
+        clocks[clocks.indexOf(cell)] = { innerText: value };
+    }
+    let new_count = computeTotalDiff(clocks, row.cells[1]);
+    let counter_cell = row.cells[row.cells.length - 1];
+    counter_cell.innerText = new_count;
+    counter_cell.classList.remove('table-danger', 'table-success');
+    counter_cell.classList.add(new_count.includes('-') ? 'table-danger' : 'table-success');
+}
+
+function modifyTitle() {
+    document.getElementById('imatge-principal').remove();
+    document.getElementsByClassName('peu')[0].firstElementChild.firstElementChild.innerText += ' · Diviloper';
+}
+
+modifyTitle();
+addButtons();
+addNewColumn();
 addConfigMenu();
-
-alert('Recorda comprovar si tens marcatges pendents d\'aprovar.')
