@@ -122,9 +122,17 @@ async function clockInRequest(date, hour, reason) {
             redirect: 'manual',
         }
     );
-    debugger;
     console.log(response);
     return response.status < 400;
+}
+
+function openTabWithRequestFilled(date, hour, reason) {
+    const url = new URL('https://tempus.upc.edu/RLG/solicitudMarcatges/list');
+    url.searchParams.append('codiSolicitudMarcatge', reason);
+    url.searchParams.append('data', date);
+    url.searchParams.append('hora', hour);
+    window.open(url, '_blank');
+    return true;
 }
 
 async function clockIn() {
@@ -135,8 +143,9 @@ async function clockIn() {
             return;
         }
     }
-    let confirmation = confirm('Es procedirà a fer tots els fitxatges afegits.' +
-        'Es deixarà un marge de 2 segons entre fitxatges per no ser tan descarat.');
+    let confirmation = confirm("Per seguretat, el tempus no permet fer fitxatges des d'aquesta pàgina.\n" + 
+    'Es procedirà a obrir una pàgina nova per cada fitxatge amb les dades ompler-tes per a que el facis tu mateix.\n' + 
+    "Assegura't de permetre la pàgina obrir finestres emergents abans");
     if (!confirmation) return;
 
     for (const clock of new_clocks) {
@@ -155,7 +164,8 @@ async function clockIn() {
         working_icon.style.paddingLeft = '4px';
         working_icon.style.display = 'inline-block';
         queue_icon.parentElement.replaceChild(working_icon, queue_icon);
-        const result = await clockInRequest(clock.customDate, clock.value, reason);
+        // const result = await clockInRequest(clock.customDate, clock.value, reason);
+        const result = openTabWithRequestFilled(clock.customDate, clock.value, reason);
         if (result) {
             const success_icon = document.createElement('i');
             success_icon.classList.add('bi', 'bi-check-lg', 'text-success');
@@ -169,7 +179,6 @@ async function clockIn() {
             failure_icon.style.display = 'inline-block';
             working_icon.parentElement.replaceChild(failure_icon, working_icon);
         }
-        await delay(2);
     }
 
 }
