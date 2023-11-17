@@ -29,5 +29,5 @@ El programa t'anirà donant instruccions per a cada pas.
 
 # Versió Navegador
 
-Per utilitzar-la, arrossega el fitxer `month_manager_button.js` a la barra d'adreces d'interès del teu navegador.  
+Per utilitzar-la, copia el contingut del fitxes [`month_manager_button.js`](./month_manager_button.js) a la barra d'adreces d'interès del teu navegador.  
 Un cop allà, podràs utilitzar el gestor de fitxatges des de la vista de **saldo mensual del tempus**.
