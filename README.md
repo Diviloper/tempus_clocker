@@ -18,7 +18,7 @@ Aquesta eina permet el següent des de la vista de saldo per dies o saldo mensua
 - Veure el rang de flexibilitat
 - Veure els marcatges fora del rang de flexibilitat
 
-A més, també elimina la imatge que només molesta :).
+A més, també elimina la imatge que no aporta gaire :).
 
 Pots veure els elements que s'afegeixen a la següent imatge comparativa:
 ![Comparació](./docs/comparacio.png "Comparació")
