@@ -1,6 +1,12 @@
 var buttons = {};
 var new_clocks = [];
 
+
+function modifyTitle() {
+    document.getElementById('imatge-principal').remove();
+    document.getElementsByClassName('peu')[0].firstElementChild.firstElementChild.innerText += ' · Diviloper';
+}
+
 function delay(seconds) {
     return new Promise(resolve => setTimeout(resolve, seconds * 1000));
 }
@@ -353,11 +359,6 @@ function updateRowCounter(row, cell, value) {
     counter_cell.innerText = new_count;
     counter_cell.classList.remove('table-danger', 'table-success');
     counter_cell.classList.add(new_count.includes('-') ? 'table-danger' : 'table-success');
-}
-
-function modifyTitle() {
-    document.getElementById('imatge-principal').remove();
-    document.getElementsByClassName('peu')[0].firstElementChild.firstElementChild.innerText += ' · Diviloper';
 }
 
 function getWeekDay(date) {
