@@ -38,6 +38,10 @@ Aquest codi simplement afegeix el fitxer [`month_manager.js`](./month_manager.js
 
 Un cop tinguis el botó a la barra, simplement fes-hi clic des de la pàgina de [**saldo per dies**](https://tempus.upc.edu/RLG/saldoMarcatgesIndividual/list) o la de [**saldo mensual**](https://tempus.upc.edu/RLG/saldoMensual/list) (un cop seleccionat el mes).
 
+#### :warning: Important :warning:
+Per seguretat, el Tempus no permet fer marcatges des de les pàgines de saldo. Per tant, al clicar a "Realitzar Marcatges", els marcatges no es fan automàticament,
+sinó que per a cada nou marcatge se t'obrirà una pestanya a la pàgina de marcatges pendents amb les dades ja omplertes. **Has de clicar el botó de "Desar nou marcatge" per a que es faci**.  
+Si no se t'obren les pestanyes que pertoca, és que el navegador les ha bloquejat. Busca una icona/missatge que ho indiqui (normalment a dreta o esquerra de la URL del navegador) i fes que es permetin les finestres emergents. Un cop permeses, simplement torna a clicar "Realitzar Marcatges" per a fer que s'obrin de nou.
 
 ## Programa Python
 ### Requisits
