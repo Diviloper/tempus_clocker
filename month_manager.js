@@ -453,8 +453,7 @@ function paintRow(row, updated_cell, updated_value) {
 }
 
 function paintClocks() {
-    let rows = document.getElementById('tableList').tBodies[0].rows;
-    rows.forEach(paintRow);
+    document.getElementById('tableList').tBodies[0].rows.forEach(paintRow);
 }
 
 async function main() {

@@ -22,15 +22,9 @@ jobs:
         with:
           files: |
             month_manager.js
-      
-      - name: List all changed files
-        run: |
-          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-            echo "$file was changed"
-          done
           
       - uses: "marvinpinto/action-automatic-releases@latest"
-        if: steps.verify-changed-files.outputs.any_changed == 'true'
+        if: steps.changed-files.outputs.any_changed == 'true'
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "latest"
