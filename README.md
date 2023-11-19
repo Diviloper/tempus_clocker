@@ -26,12 +26,11 @@ Pots veure els elements que s'afegeixen a la següent imatge comparativa:
 
 ### Instal·lació
 
-Per utilitzar-la, arrossega el següent text a la barra d'adreces d'interès del teu navegador: [Millora Tempus](javascript%3A%20%28function%28%29%20%7Blet%20script%20%3D%20document.createElement%28%27script%27%29%3Bscript.src%20%3D%20%22https%3A%2F%2Fgithub.com%2FDiviloper%2Ftempus_clocker%2Freleases%2Fdownload%2Flatest%2Fmonth_manager.js%22%3Bdocument.head.appendChild%28script%29%3B%7D%29%28%29%3B).
-
-Si no functiona, crea manualment un nou element a la teva barra d'adreces d'interès del teu navegador i afegeix el següent codi al camp URL (pots posar el que tu vulguis com a nom):
+Per utilitzar-la, crea manualment un nou element a la barra d'adreces d'interès del teu navegador i afegeix el següent codi al camp URL (pots posar el que tu vulguis com a nom):
 ```javascript
 javascript: (function() {let script = document.createElement('script');script.src = "https://github.com/Diviloper/tempus_clocker/releases/download/latest/month_manager.js";document.head.appendChild(script);})();
 ```
+Pots creat un element ràpidament arrossegant el següent enllaç a la barra d'adreces: [Canvia'm](Canvia'm). Un cop allà, simplement fes clic dret a sobre i selecciona editar per acualitzar el nom i la URL (on hi has de posar el codi que tens a sobre).  
 
 Aquest codi simplement afegeix el fitxer [`month_manager.js`](./month_manager.js) com a script per a que s'executi. Pots entrar al fitxer per veure exactament tot el codi que s'executarà.
 
