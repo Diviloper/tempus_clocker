@@ -7,6 +7,83 @@ function modifyTitle() {
     document.getElementsByClassName('peu')[0].firstElementChild.firstElementChild.innerText += ' · Diviloper';
 }
 
+function getWeekDay(date) {
+    let d = date.split('-');
+    return (new Date(d[2], d[1] - 1, d[0])).getDay() - 1;
+}
+
+async function getSchedule() {
+    let response = await fetch('https://tempus.upc.edu/RLG/horariPersonal/list');
+    let resp = (new DOMParser()).parseFromString(await response.text(), 'text/html');
+    let schedule_id = resp.getElementById('tr0').lastElementChild.firstElementChild.lastElementChild.innerText.match(/id:(\d+)/)[1];
+
+    const formData = new FormData();
+    formData.set('horariInstance', schedule_id);
+    formData.set('_action_detall', "detall");
+
+
+    response = await fetch(
+        'https://tempus.upc.edu/RLG/horariPersonal/list',
+        {
+            method: 'POST',
+            body: formData
+        }
+    );
+    resp = (new DOMParser()).parseFromString(await response.text(), 'text/html');
+    let days = resp.getElementsByClassName('claseDia');
+    let schedule = [];
+
+    for (const day of days) {
+        let ini = day.children[3].firstElementChild.value;
+        let end = day.children[4].firstElementChild.value;
+        schedule.push([ini, end]);
+    }
+    return schedule;
+}
+
+async function addScheduleColumns() {
+    let schedule = await getSchedule();
+    let table = document.getElementById('tableList');
+
+    let header = table.tHead.rows[0];
+    let ini_header = document.createElement('th');
+    ini_header.innerText = 'Ini. flex.';
+    let end_header = document.createElement('th');
+    end_header.innerText = 'Fi flex.';
+    header.insertBefore(ini_header, header.children[2]);
+    header.insertBefore(end_header, header.children[11]);
+
+    let llegenda = document.getElementsByClassName('llegenda')[0];
+    let ini_tit = document.createElement('b');
+    ini_tit.innerText = 'Ini. flex.:';
+    let end_tit = document.createElement('b');
+    end_tit.innerText = 'Fi flex.:';
+
+    let ref = llegenda.childNodes[6];
+    llegenda.insertBefore(document.createTextNode(' \u00A0'), ref);
+    llegenda.insertBefore(ini_tit, ref);
+    llegenda.insertBefore(document.createTextNode(' Inici flexibilitat'), ref);
+    llegenda.insertBefore(document.createElement('br'), ref);
+    llegenda.insertBefore(document.createTextNode(' \u00A0'), ref);
+    llegenda.insertBefore(end_tit, ref);
+    llegenda.insertBefore(document.createTextNode(' Fi flexibilitat'), ref);
+    llegenda.insertBefore(document.createElement('br'), ref);
+
+
+    let rows = table.tBodies[0].rows;
+    for (const row of rows) {
+        let cells = Array.from(row.cells);
+        let weekDay = getWeekDay(cells[0].innerText);
+        let daySchedule = schedule[weekDay];
+        let ini = document.createElement('td');
+        ini.innerText = daySchedule[0];
+        let end = document.createElement('td');
+        end.innerText = daySchedule[1];
+        row.insertBefore(ini, row.children[2]);
+        row.insertBefore(end, row.children[11]);
+    }
+}
+
 function delay(seconds) {
     return new Promise(resolve => setTimeout(resolve, seconds * 1000));
 }
@@ -359,83 +436,6 @@ function updateRowCounter(row, cell, value) {
     counter_cell.innerText = new_count;
     counter_cell.classList.remove('table-danger', 'table-success');
     counter_cell.classList.add(new_count.includes('-') ? 'table-danger' : 'table-success');
-}
-
-function getWeekDay(date) {
-    let d = date.split('-');
-    return (new Date(d[2], d[1] - 1, d[0])).getDay() - 1;
-}
-
-async function getSchedule() {
-    let response = await fetch('https://tempus.upc.edu/RLG/horariPersonal/list');
-    let resp = (new DOMParser()).parseFromString(await response.text(), 'text/html');
-    let schedule_id = resp.getElementById('tr0').lastElementChild.firstElementChild.lastElementChild.innerText.match(/id:(\d+)/)[1];
-
-    const formData = new FormData();
-    formData.set('horariInstance', schedule_id);
-    formData.set('_action_detall', "detall");
-
-
-    response = await fetch(
-        'https://tempus.upc.edu/RLG/horariPersonal/list',
-        {
-            method: 'POST',
-            body: formData
-        }
-    );
-    resp = (new DOMParser()).parseFromString(await response.text(), 'text/html');
-    let days = resp.getElementsByClassName('claseDia');
-    let schedule = [];
-
-    for (const day of days) {
-        let ini = day.children[3].firstElementChild.value;
-        let end = day.children[4].firstElementChild.value;
-        schedule.push([ini, end]);
-    }
-    return schedule;
-}
-
-async function addScheduleColumns() {
-    let schedule = await getSchedule();
-    let table = document.getElementById('tableList');
-
-    let header = table.tHead.rows[0];
-    let ini_header = document.createElement('th');
-    ini_header.innerText = 'Ini. flex.';
-    let end_header = document.createElement('th');
-    end_header.innerText = 'Fi flex.';
-    header.insertBefore(ini_header, header.children[2]);
-    header.insertBefore(end_header, header.children[11]);
-
-    let llegenda = document.getElementsByClassName('llegenda')[0];
-    let ini_tit = document.createElement('b');
-    ini_tit.innerText = 'Ini. flex.:';
-    let end_tit = document.createElement('b');
-    end_tit.innerText = 'Fi flex.:';
-
-    let ref = llegenda.childNodes[6];
-    llegenda.insertBefore(document.createTextNode(' \u00A0'), ref);
-    llegenda.insertBefore(ini_tit, ref);
-    llegenda.insertBefore(document.createTextNode(' Inici flexibilitat'), ref);
-    llegenda.insertBefore(document.createElement('br'), ref);
-    llegenda.insertBefore(document.createTextNode(' \u00A0'), ref);
-    llegenda.insertBefore(end_tit, ref);
-    llegenda.insertBefore(document.createTextNode(' Fi flexibilitat'), ref);
-    llegenda.insertBefore(document.createElement('br'), ref);
-
-
-    let rows = table.tBodies[0].rows;
-    for (const row of rows) {
-        let cells = Array.from(row.cells);
-        let weekDay = getWeekDay(cells[0].innerText);
-        let daySchedule = schedule[weekDay];
-        let ini = document.createElement('td');
-        ini.innerText = daySchedule[0];
-        let end = document.createElement('td');
-        end.innerText = daySchedule[1];
-        row.insertBefore(ini, row.children[2]);
-        row.insertBefore(end, row.children[11]);
-    }
 }
 
 function paintRow(row, updated_cell, updated_value) {
