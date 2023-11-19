@@ -35,8 +35,8 @@ function addButtonsToRow(row) {
     let cells = Array.from(row.cells);
     let date = cells[0].innerText;
     let lastClock = getLastCellWithTextIndex(cells) + 1;
-    if (lastClock > 10) return;
-    let clocks = cells.slice(2, lastClock);
+    if (lastClock > 11) return;
+    let clocks = cells.slice(3, lastClock);
     buttons[date] = [];
     clocks.forEach((element, index) => {
         const icon = document.createElement('i');
@@ -80,13 +80,13 @@ function addClock(row, nextElement, min_h, max_h) {
         minTime: min_h,
         maxTime: max_h,
         events: {
-            timeChanged: (data) => updateRowCounter(row, new_cell, data.value),
+            timeChanged: (data) => { updateRowCounter(row, new_cell, data.value); paintRow(row, new_cell, data.value); },
         }
     });
 
     row.insertBefore(new_cell, nextElement);
-    if (nextElement == row.cells[10]) row.cells[10].remove();
-    else row.cells[9].remove();
+    if (nextElement == row.cells[11]) row.cells[11].remove();
+    else row.cells[10].remove();
 
     new_clocks.push(new_clock);
 
@@ -115,7 +115,6 @@ function removeButtons(date) {
 
 async function clockInRequest(date, hour, reason) {
     /* Not working due to cross origin probably */
-    console.log(date, hour, reason);
     const formData = new FormData();
     formData.set('codiSolicitudMarcatge', reason);
     formData.set('data', date);
@@ -214,7 +213,7 @@ function addConfigMenu() {
     type_div.style.alignItems = 'center';
     type_div.innerHTML = '<b>Tingues en compte:</b>' +
         '<ul>' +
-        '<li>El nou saldo no té en compte el teu horari personal, pel que el saldo nou real pot no coincidir amb el mostrat.</li>' +
+        '<li>Els marcatges marcats en vermell són previs/posteriors a l\'hora d\'inici/fi de la flexibilitat.</li>' +
         '<li>Comprova si tens algun marcatge pendent que no estigui encara aquí</li>';
 
     let label = document.createElement('label');
@@ -304,7 +303,11 @@ function minsToHourString(mins) {
     return `${s} ${h}:${m}`;
 }
 
-function computeTotalDiff(clocks, theorical_hours) {
+function computeTotalDiff(clocks, theorical_hours, start, end) {
+    for (const i in clocks) {
+        if (clocks[i].innerText && clocks[i].innerText < start.innerText) clocks[i] = start;
+        else if (clocks[i].innerText && clocks[i].innerText > end.innerText) clocks[i] = end;
+    }
     let worked_mins = hourDiff(clocks[0].innerText, clocks[1].innerText) +
         hourDiff(clocks[2].innerText, clocks[3].innerText) +
         hourDiff(clocks[4].innerText, clocks[5].innerText) +
@@ -314,7 +317,7 @@ function computeTotalDiff(clocks, theorical_hours) {
     return minsToHourString(diff);
 }
 
-function addNewColumn() {
+function addCounterColumn() {
     let table = document.getElementById('tableList');
 
     let header_cell = document.createElement('th');
@@ -338,12 +341,14 @@ function updateNewCounters() {
 }
 
 function updateRowCounter(row, cell, value) {
-    let clocks = Array.from(row.cells).slice(2, 10);
+    let clocks = Array.from(row.cells).slice(3, 11);
     let index = clocks.indexOf(cell);
     if (index > -1) {
         clocks[clocks.indexOf(cell)] = { innerText: value };
     }
-    let new_count = computeTotalDiff(clocks, row.cells[1]);
+    let start = row.cells[2];
+    let end = row.cells[11];
+    let new_count = computeTotalDiff(clocks, row.cells[1], start, end);
     let counter_cell = row.cells[row.cells.length - 1];
     counter_cell.innerText = new_count;
     counter_cell.classList.remove('table-danger', 'table-success');
@@ -355,7 +360,109 @@ function modifyTitle() {
     document.getElementsByClassName('peu')[0].firstElementChild.firstElementChild.innerText += ' · Diviloper';
 }
 
-modifyTitle();
-addButtons();
-addNewColumn();
-addConfigMenu();
+function getWeekDay(date) {
+    let d = date.split('-');
+    return (new Date(d[2], d[1] - 1, d[0])).getDay() - 1;
+}
+
+async function getSchedule() {
+    let response = await fetch('https://tempus.upc.edu/RLG/horariPersonal/list');
+    let resp = (new DOMParser()).parseFromString(await response.text(), 'text/html');
+    let schedule_id = resp.getElementById('tr0').lastElementChild.firstElementChild.lastElementChild.innerText.match(/id:(\d+)/)[1];
+
+    const formData = new FormData();
+    formData.set('horariInstance', schedule_id);
+    formData.set('_action_detall', "detall");
+
+
+    response = await fetch(
+        'https://tempus.upc.edu/RLG/horariPersonal/list',
+        {
+            method: 'POST',
+            body: formData
+        }
+    );
+    resp = (new DOMParser()).parseFromString(await response.text(), 'text/html');
+    let days = resp.getElementsByClassName('claseDia');
+    let schedule = [];
+
+    for (const day of days) {
+        let ini = day.children[3].firstElementChild.value;
+        let end = day.children[4].firstElementChild.value;
+        schedule.push([ini, end]);
+    }
+    return schedule;
+}
+
+async function addScheduleColumns() {
+    let schedule = await getSchedule();
+    let table = document.getElementById('tableList');
+
+    let header = table.tHead.rows[0];
+    let ini_header = document.createElement('th');
+    ini_header.innerText = 'Ini. flex.';
+    let end_header = document.createElement('th');
+    end_header.innerText = 'Fi flex.';
+    header.insertBefore(ini_header, header.children[2]);
+    header.insertBefore(end_header, header.children[11]);
+
+    let llegenda = document.getElementsByClassName('llegenda')[0];
+    let ini_tit = document.createElement('b');
+    ini_tit.innerText = 'Ini. flex.:';
+    let end_tit = document.createElement('b');
+    end_tit.innerText = 'Fi flex.:';
+
+    let ref = llegenda.childNodes[6];
+    llegenda.insertBefore(document.createTextNode(' \u00A0'), ref);
+    llegenda.insertBefore(ini_tit, ref);
+    llegenda.insertBefore(document.createTextNode(' Inici flexibilitat'), ref);
+    llegenda.insertBefore(document.createElement('br'), ref);
+    llegenda.insertBefore(document.createTextNode(' \u00A0'), ref);
+    llegenda.insertBefore(end_tit, ref);
+    llegenda.insertBefore(document.createTextNode(' Fi flexibilitat'), ref);
+    llegenda.insertBefore(document.createElement('br'), ref);
+
+
+    let rows = table.tBodies[0].rows;
+    for (const row of rows) {
+        let cells = Array.from(row.cells);
+        let weekDay = getWeekDay(cells[0].innerText);
+        let daySchedule = schedule[weekDay];
+        let ini = document.createElement('td');
+        ini.innerText = daySchedule[0];
+        let end = document.createElement('td');
+        end.innerText = daySchedule[1];
+        row.insertBefore(ini, row.children[2]);
+        row.insertBefore(end, row.children[11]);
+    }
+}
+
+function paintRow(row, updated_cell, updated_value) {
+    let start = row.cells[2].innerText;
+    let end = row.cells[11].innerText;
+    let cells = Array.from(row.cells).slice(3, 11);
+    for (const cell of cells) {
+        let t = cell != updated_cell ? cell.innerText : updated_value;
+        if (t && (t < start || t > end)) {
+            cell.classList.add('table-danger');
+        } else {
+            cell.classList.remove('table-danger');
+        }
+    }
+}
+
+function paintClocks() {
+    let rows = document.getElementById('tableList').tBodies[0].rows;
+    rows.forEach(paintRow);
+}
+
+async function main() {
+    modifyTitle();
+    await addScheduleColumns();
+    addCounterColumn();
+    addButtons();
+    addConfigMenu();
+    paintClocks()
+}
+
+main();
