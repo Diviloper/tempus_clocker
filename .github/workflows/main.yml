@@ -22,6 +22,12 @@ jobs:
         with:
           files: |
             month_manager.js
+      
+      - name: List all changed files
+        run: |
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo "$file was changed"
+          done
           
       - uses: "marvinpinto/action-automatic-releases@latest"
         if: steps.verify-changed-files.outputs.any_changed == 'true'
