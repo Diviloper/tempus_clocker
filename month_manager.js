@@ -149,6 +149,7 @@ function addClock(row, nextElement, min_h, max_h) {
 
     let new_cell = document.createElement('td');
     new_cell.appendChild(new_clock);
+    new_cell.classList.add('clock-cell');
 
     const delete_icon = document.createElement('i');
     delete_icon.classList.add('bi', 'bi-trash3-fill', 'text-danger');
@@ -387,15 +388,11 @@ function minsToHourString(mins) {
     return `${s} ${h}:${m}`;
 }
 
-function computeTotalDiff(clocks, theorical_hours, start, end) {
-    for (const i in clocks) {
-        if (clocks[i].innerText && clocks[i].innerText < start.innerText) clocks[i] = start;
-        else if (clocks[i].innerText && clocks[i].innerText > end.innerText) clocks[i] = end;
-    }
-    let worked_mins = hourDiff(clocks[0].innerText, clocks[1].innerText) +
-        hourDiff(clocks[2].innerText, clocks[3].innerText) +
-        hourDiff(clocks[4].innerText, clocks[5].innerText) +
-        hourDiff(clocks[6].innerText, clocks[7].innerText);
+function computeTotalDiff(clocks, theorical_hours) {
+    let worked_mins = hourDiff(clocks[0], clocks[1]) +
+        hourDiff(clocks[2], clocks[3]) +
+        hourDiff(clocks[4], clocks[5]) +
+        hourDiff(clocks[6], clocks[7]);
     let expected_mins = hourStringToMins(theorical_hours.innerText);
     let diff = worked_mins - expected_mins;
     return minsToHourString(diff);
@@ -426,13 +423,18 @@ function updateNewCounters() {
 
 function updateRowCounter(row, cell, value) {
     let clocks = Array.from(row.cells).slice(3, 11);
-    let index = clocks.indexOf(cell);
-    if (index > -1) {
-        clocks[clocks.indexOf(cell)] = { innerText: value };
+    let start = row.cells[2].innerText;
+    let end = row.cells[11].innerText;
+    for (const i in clocks) {
+        if (clocks[i] == cell) clocks[i] = value;
+        else if (clocks[i].classList.contains('clock-cell')) clocks[i] = clocks[i].children[1].value;
+        else clocks[i] = clocks[i].innerText;
     }
-    let start = row.cells[2];
-    let end = row.cells[11];
-    let new_count = computeTotalDiff(clocks, row.cells[1], start, end);
+    for (const i in clocks) {
+        if (clocks[i] && clocks[i] < start) clocks[i] = start;
+        else if (clocks[i] && clocks[i] > end) clocks[i] = end;
+    }
+    let new_count = computeTotalDiff(clocks, row.cells[1]);
     let counter_cell = row.cells[row.cells.length - 1];
     counter_cell.innerText = new_count;
     counter_cell.classList.remove('table-danger', 'table-success');
