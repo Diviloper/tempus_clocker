@@ -12,17 +12,19 @@ jobs:
     runs-on: "ubuntu-latest"
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Verify Changed files
-        uses: tj-actions/verify-changed-files@v16
-        id: verify-changed-files
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v40
         with:
           files: |
-             month_manager.js
+            month_manager.js
           
       - uses: "marvinpinto/action-automatic-releases@latest"
-        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        if: steps.verify-changed-files.outputs.any_changed == 'true'
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "latest"
