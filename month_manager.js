@@ -187,6 +187,7 @@ function removeClock(clock, row) {
     row.insertBefore(document.createElement('td'), row.cells[9]);
     removeButtons(clock.customDate);
     addButtonsToRow(row);
+    updateRowCounter(row);
 }
 
 function removeButtons(date) {
