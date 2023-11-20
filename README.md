@@ -38,7 +38,7 @@ Aquest codi simplement afegeix el fitxer [`month_manager.js`](./month_manager.js
 
 Un cop tinguis el botó a la barra, simplement fes-hi clic des de la pàgina de [**saldo per dies**](https://tempus.upc.edu/RLG/saldoMarcatgesIndividual/list) o la de [**saldo mensual**](https://tempus.upc.edu/RLG/saldoMensual/list) (un cop seleccionat el mes).
 
-La taula de marcatges s'hauria d'haver ampliat amb columnes extres, colors i botons, tal i com es veu a la següent imatge:
+La taula de marcatges s'hauria d'haver ampliat amb columnes extres, colors i botons, tal i com es veu a la següent imatge. Els marcatges preexistens marcats en vermell són previs (o posteriors) a l'hora d'inici (o fi) de la flexibilitat (segueixen sent vàlids, però part del temps no s'està comptant de cara al saldo).
 
 ![Pas1](./docs/step1_original.PNG "Primer pas")
 
@@ -46,7 +46,7 @@ A continuació, utilitza els botons (+) per afegir els marcatges necessaris.
 
 ![Pas1](./docs/step1.PNG "Primer pas")
 
-Un cop afegits i omplerts, prem el botó de "Realitzar Marcatges".
+Omple tots els nous marcatges, pots comprovar els nous saldos que tindràs a la nova columna de la dreta. Un cop llestos, prem el botó de "Realitzar Marcatges".
 
 ![Pas2](./docs/step2.PNG "Segon pas")
 
