@@ -1,1 +1,0 @@
-javascript: (function() {let script = document.createElement('script');script.src = "https://github.com/Diviloper/tempus_clocker/releases/download/latest/month_manager.js";document.head.appendChild(script);})();
