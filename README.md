@@ -40,9 +40,13 @@ Un cop tinguis el botó a la barra, simplement fes-hi clic des de la pàgina de 
 
 La taula de marcatges s'hauria d'haver ampliat amb columnes extres, colors i botons, tal i com es veu a la següent imatge:
 
+![Pas1](./docs/step1_original.PNG "Primer pas")
+
+A continuació, utilitza els botons (+) per afegir els marcatges necessaris. 
+
 ![Pas1](./docs/step1.PNG "Primer pas")
 
-A continuació, utilitza els botons (+) per afegir els marcatges necessaris. Un cop afegits tots, prem el botó de "Realitzar marcatges".
+Un cop afegits i omplerts, prem el botó de "Realitzar Marcatges".
 
 ![Pas2](./docs/step2.PNG "Segon pas")
 
