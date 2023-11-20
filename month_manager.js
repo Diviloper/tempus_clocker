@@ -235,11 +235,8 @@ async function clockIn() {
             return;
         }
     }
-    let confirmation = confirm('Per seguretat, el tempus no permet fer fitxatges des d\'aquesta pàgina.\n' +
-        'Es procedirà a obrir una pàgina nova per cada fitxatge amb les dades ompler-tes per a que el facis tu mateix.\n' +
-        'Assegura\'t de permetre la pàgina obrir finestres emergents abans. Si no hi ha la opció, continua normal.\n' +
-        'Si veus que només s\'obre una pàgina quan has fet diversos marcatges, t\'hauria de sortir també una icona indicant que s\'han bloquejat les finestres' +
-        '(acostuma a estar a dreta o esquerra de la URL). Permet les finestres i torna a clicar \'\'Realitzar Marcatges\'\'.');
+    let confirmation = confirm('Es procedirà a realitzar els marcatges.\n' +
+        'Es deixarà un marge d\'un segon entre peticions.\n');
     if (!confirmation) return;
 
     for (const clock of new_clocks) {
