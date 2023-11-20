@@ -46,7 +46,7 @@ A continuació, utilitza els botons (+) per afegir els marcatges necessaris. Un 
 
 ![Pas2](./docs/step2.PNG "Segon pas")
 
-Després d'acceptar l'avís que et sortirà, es procedirà a fer els marcatges un a un. Es deixarà un marge d'un segon entre marcatges. Les icones al costat dels nous marcatges t'indicaran l'estat actual (groc en espera, blau en procés i verd finalitzat).
+Després d'acceptar l'avís que et sortirà, es procedirà a fer els marcatges un a un. Es deixarà un marge d'un segon entre marcatges. Les icones al costat dels nous marcatges t'indicaran l'estat actual (groc en espera, blau en procés, verd finalitzat i vermell en error).
 
 ![Pas3](./docs/step3.PNG "Tercer pas")
 
