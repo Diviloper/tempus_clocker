@@ -214,7 +214,6 @@ async function clockInRequest(date, hour, reason) {
             body: formData,
         }
     );
-    console.log(response);
     return response.status < 400;
 }
 
