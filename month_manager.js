@@ -200,6 +200,7 @@ function removeButtons(date) {
 
 async function clockInRequest(date, hour, reason) {
     /* Not working due to cross origin probably */
+    console.log(date, hour, reason);
     const formData = new FormData();
     formData.set('codiSolicitudMarcatge', reason);
     formData.set('data', date);
@@ -211,8 +212,6 @@ async function clockInRequest(date, hour, reason) {
         {
             method: 'POST',
             body: formData,
-            referrer: 'https://tempus.upc.edu/RLG/solicitudMarcatges/list',
-            redirect: 'manual',
         }
     );
     console.log(response);
@@ -259,8 +258,8 @@ async function clockIn() {
         working_icon.style.paddingLeft = '4px';
         working_icon.style.display = 'inline-block';
         queue_icon.parentElement.replaceChild(working_icon, queue_icon);
-        // const result = await clockInRequest(clock.customDate, clock.value, reason);
-        const result = openTabWithRequestFilled(clock.customDate, clock.value, reason);
+        const result = await clockInRequest(clock.customDate.replaceAll("-", "/"), clock.value, reason);
+        // const result = openTabWithRequestFilled(clock.customDate, clock.value, reason);
         if (result) {
             const success_icon = document.createElement('i');
             success_icon.classList.add('bi', 'bi-check-lg', 'text-success');
@@ -274,6 +273,7 @@ async function clockIn() {
             failure_icon.style.display = 'inline-block';
             working_icon.parentElement.replaceChild(failure_icon, working_icon);
         }
+        await delay(1);
     }
 
 }
