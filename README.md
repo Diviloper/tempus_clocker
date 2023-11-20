@@ -30,7 +30,7 @@ Per utilitzar-la, crea manualment un nou element a la barra d'adreces d'interès
 ```javascript
 javascript: (function() {let script = document.createElement('script');script.src = "https://github.com/Diviloper/tempus_clocker/releases/download/latest/month_manager.js";document.head.appendChild(script);})();
 ```
-Pots creat un element ràpidament arrossegant el següent enllaç a la barra d'adreces: [Canvia'm](Canvia'm). Un cop allà, simplement fes clic dret a sobre i selecciona editar per acualitzar el nom i la URL (on hi has de posar el codi que tens a sobre).  
+Pots crear un element ràpidament arrossegant el següent enllaç a la barra d'adreces: [Canvia'm](Canvia'm). Un cop allà, simplement fes clic dret a sobre i selecciona editar per acualitzar el nom i la URL (on hi has de posar el codi que tens a sobre).  
 
 Aquest codi simplement afegeix el fitxer [`month_manager.js`](./month_manager.js) com a script per a que s'executi. Pots entrar al fitxer per veure exactament tot el codi que s'executarà.
 
