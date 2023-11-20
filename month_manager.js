@@ -199,8 +199,6 @@ function removeButtons(date) {
 }
 
 async function clockInRequest(date, hour, reason) {
-    /* Not working due to cross origin probably */
-    console.log(date, hour, reason);
     const formData = new FormData();
     formData.set('codiSolicitudMarcatge', reason);
     formData.set('data', date);
@@ -235,7 +233,7 @@ async function clockIn() {
         }
     }
     let confirmation = confirm('Es procedirà a realitzar els marcatges.\n' +
-        'Es deixarà un marge d\'un segon entre peticions.\n');
+        'Es deixarà un marge d\'un segon entre peticions.');
     if (!confirmation) return;
 
     for (const clock of new_clocks) {
