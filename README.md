@@ -13,7 +13,7 @@ Per a qualsevol problema o proposta, creeu un issue [aquí](https://github.com/D
 
 Aquesta eina permet el següent des de la vista de saldo per dies o saldo mensual:
 
-- Escollir nous marcatges
+- Realitzar nous marcatges
 - Veure el nou saldo amb els marcatges escollits
 - Veure el rang de flexibilitat
 - Veure els marcatges fora del rang de flexibilitat
@@ -38,10 +38,19 @@ Aquest codi simplement afegeix el fitxer [`month_manager.js`](./month_manager.js
 
 Un cop tinguis el botó a la barra, simplement fes-hi clic des de la pàgina de [**saldo per dies**](https://tempus.upc.edu/RLG/saldoMarcatgesIndividual/list) o la de [**saldo mensual**](https://tempus.upc.edu/RLG/saldoMensual/list) (un cop seleccionat el mes).
 
-#### :warning: Important :warning:
-Per seguretat, el Tempus no permet fer marcatges des de les pàgines de saldo. Per tant, al clicar a "Realitzar Marcatges", els marcatges no es fan automàticament,
-sinó que per a cada nou marcatge se t'obrirà una pestanya a la pàgina de marcatges pendents amb les dades ja omplertes. **Has de clicar el botó de "Desar nou marcatge" per a que es faci**.  
-Si no se t'obren les pestanyes que pertoca, és que el navegador les ha bloquejat. Busca una icona/missatge que ho indiqui (normalment a dreta o esquerra de la URL del navegador) i fes que es permetin les finestres emergents. Un cop permeses, simplement torna a clicar "Realitzar Marcatges" per a fer que s'obrin de nou.
+La taula de marcatges s'hauria d'haver ampliat amb columnes extres, colors i botons, tal i com es veu a la següent imatge:
+
+![Pas1](./docs/step1.PNG "Primer pas")
+
+A continuació, utilitza els botons (+) per afegir els marcatges necessaris. Un cop afegits tots, prem el botó de "Realitzar marcatges".
+
+![Pas2](./docs/step2.PNG "Segon pas")
+
+Després d'acceptar l'avís que et sortirà, es procedirà a fer els marcatges un a un. Es deixarà un marge d'un segon entre marcatges. Les icones al costat dels nous marcatges t'indicaran l'estat actual (groc en espera, blau en procés i verd finalitzat).
+
+![Pas3](./docs/step3.PNG "Tercer pas")
+
+Un cop tots finalitzats, comprova que no hi hagi hagut cap error i que els marcatges s'hagin fet correctament a la pàgina de marcatges pendents.
 
 ## Programa Python
 ### Requisits
