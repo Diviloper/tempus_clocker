@@ -222,7 +222,7 @@ async function clockInRequest(date, hour, reason) {
 function openTabWithRequestFilled(date, hour, reason) {
     const url = new URL('https://tempus.upc.edu/RLG/solicitudMarcatges/list');
     url.searchParams.append('codiSolicitudMarcatge', reason);
-    url.searchParams.append('data', date);
+    url.searchParams.append('data', date.replaceAll('-', '/'));
     url.searchParams.append('hora', hour);
     window.open(url, '_blank');
     return true;
