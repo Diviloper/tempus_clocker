@@ -164,7 +164,11 @@ function addClock(row, nextElement, min_h, max_h) {
         minTime: min_h,
         maxTime: max_h,
         events: {
-            timeChanged: (data) => { updateRowCounter(row, new_cell, data.value); paintRow(row, new_cell, data.value); },
+            timeChanged: (data) => {
+                updateRowCounter(row, new_cell, data.value);
+                paintRow(row, new_cell, data.value);
+                updateTotalCounter();
+            },
         }
     });
 
@@ -189,6 +193,7 @@ function removeClock(clock, row) {
     removeButtons(clock.customDate);
     addButtonsToRow(row);
     updateRowCounter(row);
+    updateTotalCounter();
 }
 
 function removeButtons(date) {
@@ -293,7 +298,8 @@ function addConfigMenu() {
     type_div.innerHTML = '<b>Tingues en compte:</b>' +
         '<ul>' +
         '<li>Els marcatges marcats en vermell són previs/posteriors a l\'hora d\'inici/fi de la flexibilitat.</li>' +
-        '<li>Comprova si tens algun marcatge pendent que no estigui encara aquí</li>';
+        '<li>Comprova si tens algun marcatge pendent que no estigui encara aquí</li>' +
+        '</ul>';
 
     let label = document.createElement('label');
     label.for = 'codiSolicitudMarcatge';
@@ -367,7 +373,13 @@ function addConfigMenu() {
 }
 
 function hourStringToMins(hour) {
-    return parseInt(hour.split(':')[0]) * 60 + parseInt(hour.split(':')[1]);
+    let clean_hour = hour.replaceAll(' ', '');
+    let multiplier = 1;
+    if (clean_hour.length > 5) {
+        multiplier = clean_hour[0] == '-' ? -1 : 1;
+        clean_hour = clean_hour.slice(1);
+    }
+    return multiplier * (parseInt(clean_hour.split(':')[0]) * 60 + parseInt(clean_hour.split(':')[1]));
 }
 
 function hourDiff(start, end) {
@@ -454,13 +466,49 @@ function paintClocks() {
     document.getElementById('tableList').tBodies[0].rows.forEach(paintRow);
 }
 
+function addTotalCounter() {
+    let table = document.getElementById('tableList');
+    let new_tbody = document.createElement('tbody');
+    let new_row = document.createElement('tr');
+    new_row.style.borderTop = 'thin solid';
+    let text_cell = document.createElement('td');
+    text_cell.style.fontSize = '16px';
+    text_cell.style.fontWeight = '500';
+    text_cell.style.textAlign = 'right';
+    text_cell.style.paddingRight = '15px';
+    text_cell.colSpan = '16';
+    text_cell.innerText = "Saldo Total:";
+    let counter_cell = document.createElement('td');
+    counter_cell.id = 'total-counter-cell';
+
+    new_row.appendChild(text_cell);
+    new_row.appendChild(counter_cell);
+    if (document.getElementById('tableList').tBodies[0].rows.length % 2 != 0) new_tbody.appendChild(document.createElement('tr'));
+    new_tbody.appendChild(new_row);
+    table.appendChild(new_tbody);
+    updateTotalCounter();
+}
+
+function updateTotalCounter() {
+    let total = 0;
+    for (const row of document.getElementById('tableList').tBodies[0].rows) {
+        let row_counter = row.lastElementChild.innerText;
+        total += hourStringToMins(row_counter);
+    }
+    let counter_cell = document.getElementById('total-counter-cell');
+    counter_cell.innerText = minsToHourString(total);
+    counter_cell.classList.remove('table-success', 'table-danger');
+    counter_cell.classList.add(total < 0 ? 'table-danger' : 'table-success');
+}
+
 async function main() {
     modifyTitle();
     await addScheduleColumns();
     addCounterColumn();
     addButtons();
     addConfigMenu();
-    paintClocks()
+    paintClocks();
+    addTotalCounter();
 }
 
 main();
