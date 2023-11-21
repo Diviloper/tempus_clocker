@@ -382,13 +382,14 @@ function minsToHourString(mins) {
     return `${s} ${h}:${m}`;
 }
 
-function computeTotalDiff(clocks, theorical_hours) {
+function computeTotalDiff(clocks, theorical_hours, leave_hours) {
     let worked_mins = hourDiff(clocks[0], clocks[1]) +
         hourDiff(clocks[2], clocks[3]) +
         hourDiff(clocks[4], clocks[5]) +
         hourDiff(clocks[6], clocks[7]);
     let expected_mins = hourStringToMins(theorical_hours.innerText);
-    let diff = worked_mins - expected_mins;
+    let leave_mins = hourStringToMins(leave_hours.innerText);
+    let diff = worked_mins + leave_mins - expected_mins;
     return minsToHourString(diff);
 }
 
@@ -428,7 +429,7 @@ function updateRowCounter(row, cell, value) {
         if (clocks[i] && clocks[i] < start) clocks[i] = start;
         else if (clocks[i] && clocks[i] > end) clocks[i] = end;
     }
-    let new_count = computeTotalDiff(clocks, row.cells[1]);
+    let new_count = computeTotalDiff(clocks, row.cells[1], row.cells[13]);
     let counter_cell = row.cells[row.cells.length - 1];
     counter_cell.innerText = new_count;
     counter_cell.classList.remove('table-danger', 'table-success');
