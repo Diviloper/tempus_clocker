@@ -84,6 +84,57 @@ async function addScheduleColumns() {
     }
 }
 
+async function getRemoteWorkingDays() {
+    let response = await fetch('https://tempus.upc.edu/RLG/teletreball/list');
+    let resp = (new DOMParser()).parseFromString(await response.text(), 'text/html');
+    return Array.from(resp.getElementById('tr0').cells).slice(2).map((c) => c.children.length != 0);
+}
+
+async function addRemoteWorkingColumn() {
+    let remote_days = await getRemoteWorkingDays();
+    let table = document.getElementById('tableList');
+
+    let header = table.tHead.rows[0];
+    let remote_header = document.createElement('th');
+    remote_header.innerText = 'Tele.';
+    header.insertBefore(remote_header, header.children[15]);
+
+    let llegenda = document.getElementsByClassName('llegenda')[0];
+    let remote_tit = document.createElement('b');
+    remote_tit.innerText = 'Tele.:';
+
+    llegenda.appendChild(document.createTextNode(' \u00A0'));
+    llegenda.appendChild(remote_tit);
+    llegenda.appendChild(document.createTextNode(' Teletreball'));
+    llegenda.appendChild(document.createElement('br'));
+
+
+    let rows = table.tBodies[0].rows;
+    for (const row of rows) {
+        let cells = Array.from(row.cells);
+        let weekDay = getWeekDay(cells[0].innerText);
+        let is_remote = remote_days[weekDay];
+
+        let remote = document.createElement('td');
+        if (is_remote) {
+            const yes_icon = document.createElement('i');
+            yes_icon.classList.add('bi', 'bi-check-lg');
+            yes_icon.style.paddingLeft = '4px';
+            yes_icon.style.display = 'inline-block';
+            remote.appendChild(yes_icon);
+        } else {
+            const no_icon = document.createElement('i');
+            no_icon.classList.add('bi', 'bi-x-lg');
+            no_icon.style.paddingLeft = '4px';
+            no_icon.style.display = 'inline-block';
+            remote.appendChild(no_icon);
+        }
+
+        row.insertBefore(remote, row.children[15]);
+    }
+
+}
+
 function delay(seconds) {
     return new Promise(resolve => setTimeout(resolve, seconds * 1000));
 }
@@ -299,6 +350,7 @@ function addConfigMenu() {
         '<ul>' +
         '<li>Els marcatges marcats en vermell són previs/posteriors a l\'hora d\'inici/fi de la flexibilitat.</li>' +
         '<li>Comprova si tens algun marcatge pendent que no estigui encara aquí</li>' +
+        '<li>Els dies que fas teletreball les hores de més no computen (si treballes presencialment un dia que pots fer teletreball computen normal).</li>' +
         '</ul>';
 
     let label = document.createElement('label');
@@ -442,6 +494,9 @@ function updateRowCounter(row, cell, value) {
         else if (clocks[i] && clocks[i] > end) clocks[i] = end;
     }
     let new_count = computeTotalDiff(clocks, row.cells[1], row.cells[13]);
+    if (row.cells[15].firstElementChild.classList.contains('bi-check-lg') && new_count[0] == '+' && row.cells[16].innerText.trim() == '+ 00:00') {
+        new_count = '+ 00:00';
+    }
     let counter_cell = row.cells[row.cells.length - 1];
     counter_cell.innerText = new_count;
     counter_cell.classList.remove('table-danger', 'table-success');
@@ -476,7 +531,7 @@ function addTotalCounter() {
     text_cell.style.fontWeight = '500';
     text_cell.style.textAlign = 'right';
     text_cell.style.paddingRight = '15px';
-    text_cell.colSpan = '16';
+    text_cell.colSpan = '17';
     text_cell.innerText = "Saldo Total:";
     let counter_cell = document.createElement('td');
     counter_cell.id = 'total-counter-cell';
@@ -504,6 +559,7 @@ function updateTotalCounter() {
 async function main() {
     modifyTitle();
     await addScheduleColumns();
+    await addRemoteWorkingColumn();
     addCounterColumn();
     addButtons();
     addConfigMenu();
