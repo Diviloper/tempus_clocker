@@ -85,9 +85,13 @@ async function addScheduleColumns() {
 }
 
 async function getRemoteWorkingDays() {
-    let response = await fetch('https://tempus.upc.edu/RLG/teletreball/list');
-    let resp = (new DOMParser()).parseFromString(await response.text(), 'text/html');
-    return Array.from(resp.getElementById('tr0').cells).slice(2).map((c) => c.children.length != 0);
+    try {
+        let response = await fetch('https://tempus.upc.edu/RLG/teletreball/list');
+        let resp = (new DOMParser()).parseFromString(await response.text(), 'text/html');
+        return Array.from(resp.getElementById('tr0').cells).slice(2).map((c) => c.children.length != 0);
+    } catch {
+        return [false, false, false, false, false, false, false]
+    }
 }
 
 async function addRemoteWorkingColumn() {
@@ -178,8 +182,8 @@ function addButtonsToRow(row) {
         icon.style.paddingRight = '4px';
         icon.style.display = 'inline-block';
 
-        let minHour = index > 0 ? clocks[index - 1].textContent : '00:00';
-        let maxHour = index < clocks.length - 1 ? clocks[index].textContent : '24:00';
+        let minHour = index > 0 ? (clocks[index - 1].classList.contains('clock-cell') ? clocks[index - 1].children[1].value : clocks[index - 1].textContent) : '00:00';
+        let maxHour = index < clocks.length - 1 ? (clocks[index].classList.contains('clock-cell') ? clocks[index].children[0].value : clocks[index].textContent) : '24:00';
 
         icon.onclick = () => addClock(row, element, minHour, maxHour);
         element.insertBefore(icon, element.firstChild);
