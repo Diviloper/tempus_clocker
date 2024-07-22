@@ -376,10 +376,6 @@ function addConfigMenu() {
         [8010, 'E/S Teletreball '],
         [8002, 'Manca de fluid elèctric'],
         [8004, 'Oblit'],
-        [8007, 'Pèrdua targeta'],
-        [8001, 'Rellotge espatllat'],
-        [8005, 'Targeta espatllada'],
-        [8008, 'Targeta pendent d\'alta'],
     ];
 
     options.forEach(element => {
