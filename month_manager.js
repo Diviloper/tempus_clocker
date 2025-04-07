@@ -373,6 +373,7 @@ function addConfigMenu() {
 
     options = [
         [8006, 'E/S Fora lloc habitual'],
+        [8011, 'E/S Presencial'],
         [8010, 'E/S Teletreball '],
         [8002, 'Manca de fluid elèctric'],
         [8004, 'Oblit'],
