@@ -1,15 +1,118 @@
 var buttons = {};
 var new_clocks = [];
 
+var first_clocking_column_index = 2;
+var last_clocking_column_index = 9;
+
+// UTILS
+
+function delay(seconds) {
+    return new Promise(resolve => setTimeout(resolve, seconds * 1000));
+}
+
+function hourStringToMins(hour) {
+    let clean_hour = hour.replaceAll(' ', '');
+    let multiplier = 1;
+    if (clean_hour.length > 5) {
+        multiplier = clean_hour[0] == '-' ? -1 : 1;
+        clean_hour = clean_hour.slice(1);
+    }
+    return multiplier * (parseInt(clean_hour.split(':')[0]) * 60 + parseInt(clean_hour.split(':')[1]));
+}
+
+function hourDiff(start, end) {
+    if (start == '' || end == '') return 0;
+    return hourStringToMins(end) - hourStringToMins(start);
+}
+
+function minsToHourString(mins) {
+    let h = `${Math.floor(Math.abs(mins) / 60)}`.padStart(2, '0');
+    let m = `${Math.abs(mins) % 60}`.padStart(2, '0');
+    let s = mins < 0 ? '-' : '+';
+    return `${s} ${h}:${m}`;
+}
+
+function getWeekDay(date) {
+    let d = date.split('-');
+    return (new Date(d[2], d[1] - 1, d[0])).getDay() - 1;
+}
+
+function ddmmyyyy_to_yyyymmdd(date) {
+    let [d, m, y] = date.split("-")
+    return `${y}-${m}-${d}`;
+}
+
+function yyyymmdd_to_ddmmyyyy(date) {
+    let [y, m, d] = date.split("-")
+    return `${d}-${m}-${y}`;
+}
+
+// Clocker utils
+
+
+function get_min_max_dates() {
+    const dates = Array.from(document.getElementsByTagName("tr")).map((row) => row.firstElementChild?.innerText).filter((d) => d.match(/^\d{2}-\d{2}-\d{4}$/)).map(ddmmyyyy_to_yyyymmdd);
+    dates.sort((a, b) => ('' + a).localeCompare(b));
+
+    return [yyyymmdd_to_ddmmyyyy(dates[0]), yyyymmdd_to_ddmmyyyy(dates[dates.length - 1])];
+} 
+
+function get_clocking_rows() {
+    let table = document.getElementById('tableList');
+    return Array.from(table.tBodies[0].rows);
+}
+
+function get_date_of_row(row) {
+    return row.cells[0].innerText.trim();
+}
+
+function get_existing_clockings_of_row(row) {
+    return row.cells.slice(first_clocking_column_index, last_clocking_column_index).map((cell) => cell.innerText.trim());
+}
+
+function get_row_of_date(date) {
+    return get_clocking_rows().find((row) => get_date_of_row(row) === date);
+}
+
+function get_existing_clockings_of_date(date) {
+    return get_existing_clockings_of_row(get_row_of_date(date));
+}
+
+// Functionality
 
 function modifyTitle() {
     document.getElementById('imatge-principal').remove();
     document.getElementsByClassName('peu')[0].firstElementChild.firstElementChild.innerText += ' · Diviloper';
 }
 
-function getWeekDay(date) {
-    let d = date.split('-');
-    return (new Date(d[2], d[1] - 1, d[0])).getDay() - 1;
+function enlargeTable() {
+    const container = document.getElementById("taulaDadesMulti").parentElement;
+    container.classList.add("table_container");
+
+    const style = document.createElement('style');
+    style.textContent = `
+    @media only screen and (min-width: 1400px) {
+        .table_container {
+            width: 1370px;
+            max-width: 1370px;
+        }
+    }
+        
+    @media only screen and (min-width: 1600px) {
+        .table_container {
+            width: 1570px;
+            max-width: 1570px;
+            }
+    }
+        
+    @media only screen and (min-width: 1800px) {
+        .table_container {
+            width: 1770px;
+            max-width: 1770px;
+            }
+    }
+    `;
+    document.head.appendChild(style);    
 }
 
 async function getSchedule() {
@@ -51,6 +154,8 @@ async function addScheduleColumns() {
     let end_header = document.createElement('th');
     end_header.innerText = 'Fi flex.';
     header.insertBefore(ini_header, header.children[2]);
+    first_clocking_column_index += 1;
+    last_clocking_column_index += 1;
     header.insertBefore(end_header, header.children[11]);
 
     let llegenda = document.getElementsByClassName('llegenda')[0];
@@ -137,10 +242,6 @@ async function addRemoteWorkingColumn() {
         row.insertBefore(remote, row.children[15]);
     }
 
-}
-
-function delay(seconds) {
-    return new Promise(resolve => setTimeout(resolve, seconds * 1000));
 }
 
 function paint_row(row) {
@@ -425,28 +526,6 @@ function addConfigMenu() {
     type_div.appendChild(clock_button);
 }
 
-function hourStringToMins(hour) {
-    let clean_hour = hour.replaceAll(' ', '');
-    let multiplier = 1;
-    if (clean_hour.length > 5) {
-        multiplier = clean_hour[0] == '-' ? -1 : 1;
-        clean_hour = clean_hour.slice(1);
-    }
-    return multiplier * (parseInt(clean_hour.split(':')[0]) * 60 + parseInt(clean_hour.split(':')[1]));
-}
-
-function hourDiff(start, end) {
-    if (start == '' || end == '') return 0;
-    return hourStringToMins(end) - hourStringToMins(start);
-}
-
-function minsToHourString(mins) {
-    let h = `${Math.floor(Math.abs(mins) / 60)}`.padStart(2, '0');
-    let m = `${Math.abs(mins) % 60}`.padStart(2, '0');
-    let s = mins < 0 ? '-' : '+';
-    return `${s} ${h}:${m}`;
-}
-
 function computeTotalDiff(clocks, theorical_hours, leave_hours) {
     let worked_mins = hourDiff(clocks[0], clocks[1]) +
         hourDiff(clocks[2], clocks[3]) +
@@ -559,6 +638,7 @@ function updateTotalCounter() {
 
 async function main() {
     modifyTitle();
+    enlargeTable();
     await addScheduleColumns();
     await addRemoteWorkingColumn();
     addCounterColumn();
