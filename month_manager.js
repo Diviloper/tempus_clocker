@@ -10,6 +10,23 @@ function delay(seconds) {
     return new Promise(resolve => setTimeout(resolve, seconds * 1000));
 }
 
+function getTodayDate() {
+    const today = new Date();
+    const day = String(today.getDate()).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const year = today.getFullYear();
+
+    return `${day}-${month}-${year}`;
+}
+
+function getCurrentTime() {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+  
+    return `${hours}:${minutes}`;
+  }
+
 function hourStringToMins(hour) {
     let clean_hour = hour.replaceAll(' ', '');
     let multiplier = 1;
@@ -25,11 +42,16 @@ function hourDiff(start, end) {
     return hourStringToMins(end) - hourStringToMins(start);
 }
 
-function minsToHourString(mins) {
+function minsToHourString(mins, signed = true) {
     let h = `${Math.floor(Math.abs(mins) / 60)}`.padStart(2, '0');
     let m = `${Math.abs(mins) % 60}`.padStart(2, '0');
-    let s = mins < 0 ? '-' : '+';
-    return `${s} ${h}:${m}`;
+    if (signed) {
+
+        let s = mins < 0 ? '-' : '+';
+        return `${s} ${h}:${m}`;
+    } else {
+        return `${h}:${m}`;
+    }
 }
 
 function getWeekDay(date) {
@@ -741,6 +763,56 @@ function updateTotalCounter() {
     counter_cell.classList.add(total < 0 ? 'table-danger' : 'table-success');
 }
 
+async function showTodayHours() {
+    const today = getTodayDate();
+    const table = document.getElementById('tableList');
+
+    const rows = Array.from(table.tBodies[0].rows).filter((row) => row.cells[0].innerText.trim().startsWith(today));
+    const clockings = rows.map((row) => row.cells[0].innerText.trim().split(' ')[1]);
+
+    let pendingClockings = [];
+    try {
+        const pendingRows = await getPendingClockingRows(today, today);
+        pendingClockings = pendingRows.filter((row) => row.childElementCount > 3).map((row) => row.cells[0].innerText.trim().split(" ")[1]);
+    } catch (error) {
+        pendingClockings = []
+    }
+
+    let allClockings = [...clockings, ...pendingClockings];
+    allClockings.sort();
+    allClockings = allClockings.map(hourStringToMins);
+
+    let time = 0;
+    for (let i = 0; i < Math.floor(allClockings.length / 2); i++) {
+        time += allClockings[2 * i + 1] - allClockings[2 * i];
+    }
+    
+    let message;
+    if (allClockings.length % 2 === 0) {
+        message = `⏳ Avui has marcat ${allClockings.length} vegades, amb un total de ${minsToHourString(time, false)} hores treballades. ⌛`
+    } else {
+        const now = hourStringToMins(getCurrentTime());
+        time += now - allClockings[allClockings.length - 1];
+        message = `⏳ Avui has marcat ${allClockings.length} vegades, si marques ara, hauràs treballat un total de ${minsToHourString(time, false)} hores treballades. ⌛`
+    }
+
+    const messageSpan = document.createElement("span");
+    messageSpan.style.fontSize = "larger";
+    messageSpan.style.backgroundColor = "#ffdfba"
+    messageSpan.style.color = "black"
+    messageSpan.style.padding = "10px";
+    messageSpan.classList.add("rounded-pill");
+
+    messageSpan.innerText += message;
+    
+    const messageDiv = document.createElement("div");
+    messageDiv.style.margin = "20px 0";
+    messageDiv.appendChild(messageSpan);
+    
+    const parentDiv = document.querySelector(".fonsBlau_light > .container div:first-child");
+    parentDiv.appendChild(messageDiv);
+}
+
 async function main() {
     modifyTitle();
     enlargeTable();
@@ -754,4 +826,10 @@ async function main() {
     addTotalCounter();
 }
 
-main();
+
+
+if (location.href.endsWith("RLG/marcatges/list")){
+    showTodayHours();
+} else {
+    main();
+}
