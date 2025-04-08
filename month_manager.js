@@ -90,7 +90,14 @@ function modifyTitle() {
 }
 
 function enlargeTable() {
-    const container = document.getElementById("taulaDadesMulti").parentElement;
+    let container;
+    try {
+        // Saldo per mesos
+        container = document.getElementById("taulaDadesMulti").parentElement;
+    } catch(error) {
+        // Saldo per dies
+        container = document.getElementById('tableList').parentElement.parentElement;
+    }
     container.classList.add("table_container");
 
     const style = document.createElement('style');
