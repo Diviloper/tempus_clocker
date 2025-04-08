@@ -804,8 +804,14 @@ async function showTodayHours() {
     messageSpan.classList.add("rounded-pill");
 
     messageSpan.innerText += message;
+
+    const existingDiv = document.getElementById("today-worked-hours");
+    if (existingDiv) {
+        existingDiv.remove();
+    }
     
     const messageDiv = document.createElement("div");
+    messageDiv.id = "today-worked-hours";
     messageDiv.style.margin = "20px 0";
     messageDiv.appendChild(messageSpan);
     
