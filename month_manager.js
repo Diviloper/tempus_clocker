@@ -793,7 +793,7 @@ async function showTodayHours() {
     } else {
         const now = hourStringToMins(getCurrentTime());
         time += now - allClockings[allClockings.length - 1];
-        message = `⏳ Avui has marcat ${allClockings.length} vegades, si marques ara, hauràs treballat un total de ${minsToHourString(time, false)} hores. ⌛`
+        message = `⏳ Avui has marcat ${allClockings.length} ${allClockings.length === 1 ? 'vegada' : 'vegades'}, si marques ara, hauràs treballat un total de ${minsToHourString(time, false)} hores. ⌛`
     }
 
     const messageSpan = document.createElement("span");
