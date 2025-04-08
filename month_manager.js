@@ -47,14 +47,18 @@ function yyyymmdd_to_ddmmyyyy(date) {
     return `${d}-${m}-${y}`;
 }
 
+function date_compare(d1, d2) {
+    return ddmmyyyy_to_yyyymmdd(d1).localeCompare(ddmmyyyy_to_yyyymmdd(d2));
+}
+
 // Clocker utils
 
 
 function get_min_max_dates() {
-    const dates = Array.from(document.getElementsByTagName("tr")).map((row) => row.firstElementChild?.innerText).filter((d) => d.match(/^\d{2}-\d{2}-\d{4}$/)).map(ddmmyyyy_to_yyyymmdd);
-    dates.sort((a, b) => ('' + a).localeCompare(b));
+    const dates = get_clocking_rows().map(get_date_of_row);
+    dates.sort(date_compare);
 
-    return [yyyymmdd_to_ddmmyyyy(dates[0]), yyyymmdd_to_ddmmyyyy(dates[dates.length - 1])];
+    return [dates[0], dates[dates.length - 1]];
 } 
 
 function get_clocking_rows() {
@@ -67,7 +71,7 @@ function get_date_of_row(row) {
 }
 
 function get_existing_clockings_of_row(row) {
-    return row.cells.slice(first_clocking_column_index, last_clocking_column_index).map((cell) => cell.innerText.trim());
+    return Array.from(row.cells).slice(first_clocking_column_index, last_clocking_column_index).map((cell) => cell.innerText.trim()).filter((clocking) => clocking);
 }
 
 function get_row_of_date(date) {
@@ -142,6 +146,94 @@ async function getSchedule() {
         schedule.push([ini, end]);
     }
     return schedule;
+}
+
+async function getPendingClockingRows(ini_date, end_date) {
+    let data = new FormData();
+    data.append("dataInici", ini_date.replaceAll('-', '/'));
+    data.append("dataFi", end_date.replaceAll('-', '/'));
+    data.append("marcatgeId", "");
+    data.append("_action_list", "Cerca");
+    let response = await fetch('https://tempus.upc.edu/RLG/solicitudMarcatges/list', {
+        method: "POST",
+        body: data
+    });
+    let body = (new DOMParser()).parseFromString(await response.text(), 'text/html');
+    let table = body.getElementById("tableList");
+
+    const rows = Array.from(table.tBodies[0].rows);
+
+    const pagination = body.getElementsByClassName("paginateButtonsRlg")[0];
+    if (pagination.childElementCount === 0) return rows;
+
+    const num_pages = parseInt(pagination.children[pagination.childElementCount-2].innerText);
+
+    const block_size = 30;
+    for (let i=1; i < num_pages; ++i) {
+        data = new FormData();
+        data.append("dataInici", ini_date.replaceAll('-', '/'));
+        data.append("dataFi", end_date.replaceAll('-', '/'));
+        data.append("marcatgeId", "");
+        data.append("_action_list", "Cerca");
+        data.append("max", block_size);
+        data.append("offset", block_size * i);
+        response = await fetch('https://tempus.upc.edu/RLG/solicitudMarcatges/list', {
+            method: "POST",
+            body: data
+        });
+        body = (new DOMParser()).parseFromString(await response.text(), 'text/html');
+        table = body.getElementById("tableList");
+
+        rows.push(...table.tBodies[0].rows);
+    }
+
+    return rows;
+}
+
+async function getPendingClockings() {
+    const [min_date, max_date] = get_min_max_dates();
+    const rows = await getPendingClockingRows(min_date, max_date);
+    // Date, Hour, State
+    const clockings = rows.filter((row) => row.childElementCount > 3).map((row) => [row.cells[0].innerText.trim(), row.cells[3].innerText.trim()]).map(([d, s]) => [...d.split(" "), s]);
+    const pending_clockings = clockings.filter(([clock_date, clock_hour, clock_state]) => !get_existing_clockings_of_date(clock_date).includes(clock_hour));
+    return pending_clockings.map(([cd, ch, cs]) => ({"date": cd, "hour": ch, "state": cs}));
+}
+
+async function addPendingClockings() {
+    try {
+
+        const pending_clockings = await getPendingClockings();
+        const pending_clockings_per_date = Object.groupBy(pending_clockings, (c) => c.date);
+        
+        for (const date in pending_clockings_per_date) {
+            const existing_clockings = get_existing_clockings_of_date(date);
+            const missing_clockings = pending_clockings_per_date[date].filter((clocking) => !existing_clockings.includes(clocking));
+            if (missing_clockings.length === 0) continue;
+            
+            const all_clockings = [...existing_clockings, ...missing_clockings.map((clocking) => clocking.hour)];
+            all_clockings.sort()
+            
+            const row = get_row_of_date(date);
+            for (let i = 0; i < all_clockings.length; ++i) {
+                const clocking = all_clockings[i];
+                const cell = row.cells[first_clocking_column_index + i];
+                cell.innerText = clocking;
+                
+                const missing = missing_clockings.find((mc) => mc.hour === clocking);
+                if (missing) {
+                    switch (missing.state) {
+                        case "Pendent":
+                            cell.classList.add(`table-warning`);
+                            break;
+                            case "Acceptat":
+                                cell.classList.add(`table-info`);
+                            }
+                        }
+                    }
+                }
+    } catch (error){
+        console.error("There was an error while adding the pending clockings:", e);
+    }
 }
 
 async function addScheduleColumns() {
@@ -453,7 +545,14 @@ function addConfigMenu() {
     type_div.style.alignItems = 'center';
     type_div.innerHTML = '<b>Tingues en compte:</b>' +
         '<ul>' +
-        '<li>Els marcatges marcats en vermell són previs/posteriors a l\'hora d\'inici/fi de la flexibilitat.</li>' +
+        '<li>Els marcatges marcats en: </li>' +
+            '<ul>' +
+            '<li><span class="table-danger" style="background-color: var(--bs-table-bg); padding: 2px;">Vermell</span> són previs/posteriors a l\'hora d\'inici/fi de la flexibilitat.</li>' +
+            '<li><span class="table-warning" style="background-color: var(--bs-table-bg); padding: 2px;">Groc</span> són marcatges pendents d\'aprovar.</li>' +
+            '<li><span class="table-success" style="background-color: var(--bs-table-bg); padding: 2px;">Verd</span> són marcatges aprovats que encara no s\'han registrat.</li>' +
+            '<li><span class="table-info" style="background-color: var(--bs-table-bg); padding: 2px;">Blau</span> són marcatges pendents amb un estat inesperat.</li>' +
+            '</ul>' +
+        '</li>' +
         '<li>Comprova si tens algun marcatge pendent que no estigui encara aquí</li>' +
         '<li>Els dies que fas teletreball les hores de més no computen (si treballes presencialment un dia que pots fer teletreball computen normal).</li>' +
         '</ul>';
@@ -641,6 +740,7 @@ async function main() {
     enlargeTable();
     await addScheduleColumns();
     await addRemoteWorkingColumn();
+    await addPendingClockings();
     addCounterColumn();
     addButtons();
     addConfigMenu();
