@@ -819,17 +819,152 @@ async function showTodayHours() {
     parentDiv.appendChild(messageDiv);
 }
 
+function createClockingGeneratorDialog() {
+    const dialog = document.createElement("dialog");
+    dialog.style.maxWidth = "40vw";
+    dialog.style.maxHeight = "80vh";
+    dialog.style.borderColor = "#0e82c3";
+    dialog.classList.add("rounded");
+    dialog.innerHTML = `
+    <div>
+        <h1>Generador de marcatges automàtics</h1>
+        <ul>
+            <li>Aquesta eina omplirà la taula amb marcatges amb la intenció de complir amb les hores. </li>
+            <li>Els marcatges que ja hagis fet es tindran en compte a l'hora d'afegir els nous. </li>
+            <li>Un cop fets, recorda que encara els has d'enviar amb el botó de "Realitzar Marcatges" com si els haguéssis omplert tu. </li>
+            <li>Pots decidir quins dies de la setmana vols fer jornada normal (amb pausa per dinar) o intensiva (tot pel matí): </li>
+        </ul>
+        <table id="intensive-workday-table">
+        <tbody>
+            <tr>
+                <th class="iwt-bb iwt-br">Dia de la setmana</th>
+                <th class="iwt-bb ">Dilluns</th>
+                <th class="iwt-bb ">Dimarts</th>
+                <th class="iwt-bb ">Dimecres</th>
+                <th class="iwt-bb ">Dijous</th>
+                <th class="iwt-bb ">Divendres</th>
+                <th class="iwt-bb ">Dissabte</th>
+                <th class="iwt-bb ">Diumenge</th>
+            </tr>
+            <tr>
+                <th class="iwt-br">Jornada Intensiva</th>
+                <td><input type="checkbox"></td>
+                <td><input type="checkbox"></td>
+                <td><input type="checkbox"></td>
+                <td><input type="checkbox"></td>
+                <td><input type="checkbox"></td>
+                <td><input type="checkbox"></td>
+                <td><input type="checkbox"></td>
+            </tr>
+        </tbody>
+        </table>
+    </div>
+    `;
+
+    const cancelButton = document.createElement("button");
+    cancelButton.classList.add("btn", "rounded-pill", "btn-danger");
+    cancelButton.innerText = "Torna Enrere";
+    cancelButton.onclick = () => dialog.close();
+    
+    const proceedButton = document.createElement("button");
+    proceedButton.classList.add("btn", "rounded-pill", "btn-primary");
+    proceedButton.innerText = "Genera Marcatges";
+    proceedButton.onclick = () => {
+        dialog.close();
+        generateClockings();
+    };
+
+    const div = document.createElement("div");
+    div.style.marginTop = "10px";
+    div.style.display = "flex";
+    div.style.justifyContent = "space-around";
+    div.appendChild(cancelButton);
+    div.appendChild(proceedButton);
+
+    dialog.lastElementChild.appendChild(div);
+
+    const style = document.createElement('style');
+    style.textContent = `
+    #intensive-workday-table {
+        width: 100%;
+        border: 1px solid #0e82c3;
+    }
+
+    .iwt-br {
+        border-right: 1px solid #0e82c3;
+    }
+
+    .iwt-bb {
+        border-bottom: 1px solid #0e82c3;
+    }
+
+    #intensive-workday-table th, #intensive-workday-table td {
+        padding: 2px;
+        text-align: center;
+    }
+    `;
+
+    document.head.appendChild(style);
+    document.body.appendChild(dialog);
+    return dialog;
+}
+
+function addClockingGeneratorButton(dialog) {
+    const button = document.querySelector("button[type=submit]");
+    const newButton = document.createElement("button");
+    newButton.classList = button.classList;
+    newButton.innerText = "Genera marcatges";
+    newButton.setAttribute("type", "button");
+    newButton.onclick = () => dialog.showModal();
+    button.parentElement.appendChild(newButton);
+    button.parentElement.classList.add("gap-3");
+}
+
+function addClocking(date, hour) {
+
+}
+
+function generateClockings() {
+    const intensive = document.querySelectorAll("#intensive-workday-table input").map((input) => input.checked);
+
+    const rows = get_clocking_rows();
+
+    for (const row of rows) {
+        const date = get_date_of_row(row);
+        const clockings = get_existing_clockings_of_row(row);
+        const minsToDo = hourStringToMins(row.cells[1].innerText.trim()) - hourStringToMins(row.cells[13].innerText.trim()) - hourStringToMins(row.cells[14].innerText.trim());
+
+        if (intensive[getWeekDay(date)]) {
+            if (clockings.length >= 2) continue;
+            const morningMinutes = minsToDo;
+            const startingHour = "08:00";
+            const endHour = minsToHourString(8*60 + minsToDo);
+            
+        } else {
+            if (clockings.length >= 4) continue;
+            let afternoonMinutes = 3 * 60;
+            let morningMinutes = minsToDo - afternoonMinutes;    
+        }
+    }
+}
+
+function addClockingGenerator() {
+    const dialog = createClockingGeneratorDialog()
+    addClockingGeneratorButton(dialog);
+}
+
 async function main() {
     modifyTitle();
-    enlargeTable();
-    await addScheduleColumns();
-    await addRemoteWorkingColumn();
-    await addPendingClockings();
-    addCounterColumn();
-    addButtons();
-    addConfigMenu();
-    paintClocks();
-    addTotalCounter();
+    // enlargeTable();
+    // await addScheduleColumns();
+    // await addRemoteWorkingColumn();
+    // await addPendingClockings();
+    // addCounterColumn();
+    // addButtons();
+    // addConfigMenu();
+    // paintClocks();
+    // addTotalCounter();
+    addClockingGenerator();
 }
 
 
