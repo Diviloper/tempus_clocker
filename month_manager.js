@@ -553,7 +553,6 @@ function addConfigMenu() {
             '<li><span class="table-info" style="background-color: var(--bs-table-bg); padding: 2px;">Blau</span> són marcatges pendents amb un estat inesperat.</li>' +
             '</ul>' +
         '</li>' +
-        '<li>Comprova si tens algun marcatge pendent que no estigui encara aquí</li>' +
         '<li>Els dies que fas teletreball les hores de més no computen (si treballes presencialment un dia que pots fer teletreball computen normal).</li>' +
         '</ul>';
 
